@@ -21,16 +21,20 @@ RUN make build
 #CMD ["lora-gateway-bridge"]
 
 # download confd
-RUN wget -L https://github.com/kelseyhightower/confd/releases/download/v0.11.0/confd-0.11.0-linux-amd64 -o /usr/local/bin/confd
+ADD https://github.com/kelseyhightower/confd/releases/download/v0.11.0/confd-0.11.0-linux-amd64 /usr/local/bin/confd
 RUN chmod +x /usr/local/bin/confd
 
 # create paths
 RUN mkdir -p /etc/confd/{conf.d,templates}
+RUN mkdir -p /etc/lora
+RUN mkdir -p /var/log/lora-gw
 
 # copy scripts into directories
-RUN cp $PROJECT_PATH/scripts/lora-gw.tmpl /etc/confd/templates/lora-gw.tmpl
-RUN cp $PROJECT_PATH/scripts/lora-gw.toml /etc/confd/conf.d/lora-gw.toml
-RUN cp $PROJECT_PATH/scripts/confd-watch-lora-gw /usr/local/bin/confd-watch-lora-gw
+COPY scripts/lora-gw.tmpl /etc/confd/templates/lora-gw.tmpl
+COPY scripts/lora-gw.toml /etc/confd/conf.d/lora-gw.toml
+COPY scripts/confd-watch-lora-gw /usr/local/bin/confd-watch-lora-gw
+COPY scripts/start_lora_bridge.sh /usr/local/bin/start_lora_bridge.sh
 RUN chmod +x /usr/local/bin/confd-watch-lora-gw
+RUN chmod +x /usr/local/bin/start_lora_bridge.sh
 
 CMD ["confd-watch-lora-gw"]

@@ -1,0 +1,28 @@
+#!/bin/bash
+
+set -eo pipefail
+
+export ETCD_PORT=${ETCD_PORT:-2379}
+export HOST_IP=${HOST_IP:-172.17.0.1}
+export ETCD=$HOST_IP:$ETCD_PORT
+
+echo "[lora-gw-bridge] booting container. ETCD: $ETCD"
+
+until confd -onetime -node $ETCD -config-file /etc/confd/conf.d/lora-gw.toml; do
+	echo "[lora-gw-bridge] waiting for confd to create initial gw configuration"
+	sleep 5
+done
+
+confd -interval 10 -node $ETCD -config-file /etc/confd/conf.d/lora-gw.toml &
+echo "[lora-gw-bridge] confd is now monitoring etcd for changes"
+
+# start the bridge and let confd restart it if necessary
+/usr/local/bin/start_lora_bridge.sh
+#. /etc/lora/gateway.env
+#lora-gateway-bridge --mqtt-server $MQTT_SERVER > /var/log/lora-gw/lora-gw.log 2>&1 &
+
+# wait for it to startup
+sleep 5
+
+# tail the logs to keep running
+tail -f /var/log/lora-gw/lora-gw.log

@@ -1,0 +1,12 @@
+[template]
+
+src = "lora-gw.tmpl"
+dest = "/etc/lora/gateway.env"
+
+keys = [ "/services/mqtt/gateway" ]
+
+owner = "root"
+mode = "0644"
+
+reload_cmd = "/usr/local/bin/start_lora_bridge.sh"
+#reload_cmd = "killall -9 lora-gateway-bridge; . /etc/lora/gateway.env; lora-gateway-bridge --mqtt-server $MQTT_SERVER > /var/log/lora-gw/lora-gw.log 2>&1 &;"
